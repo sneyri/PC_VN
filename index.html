@@ -16,7 +16,18 @@
 <div id="cover" class="cover"><p class="eyebrow">СУББОТА / 18:45</p><h1>Первый<br>запуск<span>_</span></h1><p>До закрытия мастерской один час. У тебя один заказ: собрать ПК, который справится с монтажом и играми.</p><button id="start" type="button">Начать историю</button></div>
 <div id="dialog" class="dialog" hidden><p class="eyebrow" id="speaker"></p><p id="line" role="status"></p><button id="next" type="button">Дальше</button></div>
 </section>
-<section id="builder" hidden aria-labelledby="build-title"><div class="build-head"><div><p class="eyebrow">ЗАКАЗ / 01</p><h2 id="build-title">Собери конфигурацию</h2></div><output id="total" aria-live="polite"></output></div><p>Бюджет — 80 000 ₽. Проверь сокет, запас мощности и объём памяти. Цены условные.</p><form id="parts"><div id="fields"></div><button type="submit">Проверить сборку</button></form></section>
+<section id="builder" hidden aria-labelledby="build-title">
+  <div class="build-head">
+    <div><p class="eyebrow" id="step-number"></p><h2 id="build-title" tabindex="-1"></h2></div>
+    <output id="total" aria-live="polite"></output>
+  </div>
+  <p id="step-copy"></p>
+  <form id="parts">
+    <fieldset id="fields"><legend class="sr-only" id="choice-label">Варианты</legend></fieldset>
+    <div class="actions"><button id="back" type="button" class="secondary">Назад</button><button id="advance" type="submit">Продолжить</button></div>
+  </form>
+  <details id="cart" hidden><summary>Корзина</summary><ul id="cart-list"></ul></details>
+</section>
 <section id="ending" hidden aria-labelledby="ending-title"><p class="eyebrow">КОНЦОВКА</p><h2 id="ending-title" tabindex="-1"></h2><p id="ending-copy"></p><div class="actions"><button id="retry" type="button">Пересобрать</button><button id="restart" type="button">Сначала</button></div></section>
 <noscript>Для игры нужен JavaScript.</noscript>
 </main>
