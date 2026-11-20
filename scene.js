@@ -35,10 +35,9 @@ const parts = {
   ]}
 };
 const lines = [
-  ['Мира', 'Клиент написал, что будет через час. Ему нужен компьютер для монтажа и игр, а смету нужно согласовать перед сборкой.'],
-  ['Ты', 'Если взять самую дорогую видеокарту, на остальное почти ничего не останется.'],
-  ['Мира', 'Вот и проверь, где нужен запас. Для этого заказа я бы взяла хотя бы шесть ядер, 32 ГБ памяти и видеокарту с 8 ГБ.'],
-  ['Мира', 'Сверь сокеты и тип памяти. Блок питания бери с запасом: примерно на четверть больше, чем потребляют процессор, видеокарта и ещё 80 Вт на остальное. SSD уже в смете, он стоит 5 тысяч.']
+  ['Мира', 'Привет! Ищешь готовый компьютер или хочешь собрать свой?'],
+  ['Ты', 'Хочу собрать свой. Буду играть и иногда монтировать видео, но в деталях пока не разбираюсь.'],
+  ['Мира', 'Давай подберём вместе. Для твоих задач я бы ориентировалась на шесть ядер, 32 ГБ памяти и видеокарту с 8 ГБ. Начнём с суммы, которую тебе удобно потратить.']
 ];
 let lineIndex = 0;
 
@@ -61,7 +60,7 @@ function show(scene) {
   get('stage').dataset.scene = scene;
   get('chapter').textContent = {title:'Визуальная новелла', dialog:'Мастерская', build:'Подбор деталей', end:'Первый запуск'}[scene];
   for (const [id,screen] of [['cover','title'],['dialog','dialog'],['sprite','dialog'],['builder','build'],['ending','end']]) {
-    get(id).hidden = scene !== screen;
+    get(id).hidden = scene !== screen && !(id === 'sprite' && scene === 'build');
   }
 }
 function showLine() {
@@ -76,21 +75,22 @@ const budgets = [
   {name:'80 000 ₽', price:80000, detail:'Есть запас на память и видеокарту.'},
   {name:'100 000 ₽', price:100000, detail:'Больше свободы при выборе комплектующих.'}
 ];
-const hints = {
-  case:'Мира: начнём с корпуса. Реши, нужен ли компактный ПК или есть место для башни.',
-  cpu:'Мира: для этого заказа целимся хотя бы в шесть ядер. Запомни сокет процессора.',
-  board:'Мира: сверь сокет и размер платы с тем, что уже лежит в корзине.',
-  gpu:'Мира: для клиента ищи видеокарту с 8 ГБ памяти или больше.',
-  ram:'Мира: для монтажа пригодятся 32 ГБ. Проверь, какой тип памяти поддерживает плата.',
-  power:'Мира: сложи потребление процессора, видеокарты и ещё 80 Вт на остальное. Добавь четверть про запас.'
+const questions = {
+  case:'Где будет стоять твой компьютер? Для маленького стола есть компактный корпус. Если места хватает, башня даст больше свободы с выбором платы.',
+  cpu:'Что возьмём для твоих игр и монтажа? Шесть ядер — разумная середина. Восемь быстрее в тяжёлых задачах, но потянут за собой более дорогую плату.',
+  board:'Теперь подберём плату. Посмотри на сокет выбранного процессора и проверь, влезет ли плата в твой корпус.',
+  gpu:'Что важнее для тебя — сэкономить или взять карту с запасом? Для твоих игр и монтажа я бы начала с 8 ГБ видеопамяти.',
+  ram:'Для монтажа я бы взяла 32 ГБ. Какой комплект выбираешь? Тип DDR должен совпадать с тем, что поддерживает твоя плата.',
+  power:'Остался блок питания. Какой берём? Я посчитаю, хватит ли мощности с запасом.'
 };
 const steps = [
-  {key:'budget', name:'Бюджет', options:budgets, hint:'Мира: согласуй с клиентом лимит перед походом по магазину.'},
-  ...Object.entries(parts).map(([key, part]) => ({key, ...part, hint:hints[key]})),
-  {key:'review', name:'Проверка заказа', hint:'Мира: проверь корзину перед запуском. Если нужно что-то поменять, вернись к нужному шагу.'}
+  {key:'budget', name:'Бюджет', options:budgets, hint:'Какой у тебя бюджет на весь компьютер? SSD за 5 000 ₽ я уже включила в смету.'},
+  ...Object.entries(parts).map(([key, part]) => ({key, ...part, hint:questions[key]})),
+  {key:'review', name:'У кассы', hint:'Вот твоя сборка. Хочешь что-то заменить или сделаем пробный запуск перед покупкой?'}
 ];
 const choices = {};
 let stepIndex = 0;
+let awaitingNext = false;
 
 function price(build) {
   return fixedPrice + Object.values(build).reduce((sum, part) => sum + part.price, 0);
@@ -113,10 +113,30 @@ function renderCart() {
   get('total').textContent = budget ? money.format(cost) + ' / ' + money.format(budget) : '';
   get('total').classList.toggle('over', budget > 0 && cost > budget);
 }
+function reply(key, pick) {
+  const build = readBuild();
+  switch (key) {
+    case 'budget': return 'Договорились, держимся в пределах ' + money.format(budget) + '. Теперь посмотрим корпуса.';
+    case 'case': return pick.size === 'ATX' ? 'В эту башню влезут обе наши платы.' : 'Компактный вариант. Тогда нам понадобится плата Micro-ATX.';
+    case 'cpu': return 'Записала процессор на ' + pick.socket + '. Под него ищем плату с тем же сокетом.';
+    case 'board':
+      if (pick.socket !== build.cpu.socket) return 'У этой платы другой сокет. Можно положить её в корзину, но перед покупкой придётся заменить плату или процессор.';
+      if (pick.size === 'ATX' && build.case.size !== 'ATX') return 'По сокету подходит, но плата не влезет в твой корпус. Потом можно вернуться и поменять один из вариантов.';
+      return 'Отлично, плата подходит к процессору и помещается в корпус.';
+    case 'gpu': return pick.vram < 8 ? 'Сэкономим на видеокарте. Для лёгких игр хватит, но в тяжёлых проектах 6 ГБ могут стать ограничением.' : 'Для твоих задач видеопамяти достаточно. Учтём её потребление, когда дойдём до блока питания.';
+    case 'ram': return pick.socket !== build.board.socket ? 'Этот тип памяти не подходит к выбранной плате. Вернёмся к нему перед покупкой.' : pick.gb < 32 ? '16 ГБ хватит для обычной работы, но на монтаже запас будет меньше.' : '32 ГБ, и тип памяти подходит. Для монтажа хороший выбор.';
+    case 'power': {
+      const needed = Math.ceil((build.cpu.watts + build.gpu.watts + 80) * 1.25);
+      return pick.watts >= needed ? 'По моей прикидке нужно от ' + needed + ' Вт. У выбранного блока есть запас.' : 'С запасом я бы взяла от ' + needed + ' Вт. Этот блок слабоват, можешь вернуться и выбрать другой.';
+    }
+  }
+}
 function renderStep() {
   const step = steps[stepIndex];
   const fields = get('fields');
   const review = !step.options;
+  awaitingNext = false;
+  get('your-line').hidden = true;
   get('step-number').textContent = 'ШАГ ' + (stepIndex + 1) + ' / ' + steps.length;
   get('build-title').textContent = step.name;
   get('step-copy').textContent = step.hint;
@@ -124,7 +144,7 @@ function renderStep() {
   fields.hidden = review;
   get('back').hidden = stepIndex === 0;
   get('advance').disabled = !review && choices[step.key] === undefined;
-  get('advance').textContent = review ? 'Запустить ПК' : step.key === 'budget' ? 'Подтвердить бюджет' : 'В корзину и дальше';
+  get('advance').textContent = review ? 'Сделать пробный запуск' : 'Ответить';
   get('cart').hidden = step.key === 'budget';
   if (review) get('cart').open = true;
 
@@ -156,27 +176,41 @@ function result(build) {
   if (ram.socket !== board.socket) faults.push('Тип памяти не подходит к плате.');
   if (power.watts < Math.ceil((cpu.watts + gpu.watts + 80) * 1.25)) faults.push('Блоку питания не хватает запаса мощности.');
   if (faults.length) return ['Чёрный экран', faults.join(' ') + ' Мира предлагает заменить детали до запуска.'];
-  if (price(build) > budget) return ['Пауза у кассы', 'Компьютер собран, но смета вышла за бюджет на ' + money.format(price(build) - budget) + '. Клиент просит пересмотреть выбор.'];
-  if (cpu.cores < 6 || ram.gb < 32 || gpu.vram < 8) return ['Запустился, но с оговоркой', 'Компьютер работает, но для монтажа и игр клиенту нужны хотя бы 6 ядер, 32 ГБ памяти и видеокарта с 8 ГБ.'];
-  return ['Первый запуск', 'Система стартовала. Сборка помещается в бюджет и подходит под задачи. Клиент забирает компьютер, а Мира отдаёт тебе ключ от мастерской на следующую смену.'];
+  if (price(build) > budget) return ['Пауза у кассы', 'Компьютер собран, но смета вышла за бюджет на ' + money.format(price(build) - budget) + '. Ты можешь убрать дорогую деталь или вернуться к обсуждению бюджета.'];
+  if (cpu.cores < 6 || ram.gb < 32 || gpu.vram < 8) return ['Запустился, но с оговоркой', 'Компьютер работает, но для твоих игр и монтажа Мира советует хотя бы 6 ядер, 32 ГБ памяти и видеокарта с 8 ГБ.'];
+  return ['Первый запуск', 'Система стартовала. Сборка помещается в бюджет и подходит под задачи. Ты оплачиваешь свой первый ПК. Мира отдаёт тебе коробку и напоминает снять плёнку с корпуса дома.'];
 }
 get('parts').addEventListener('change', () => {
   get('advance').disabled = false;
 });
 get('back').addEventListener('click', () => {
-  stepIndex -= 1;
+  if (!awaitingNext) stepIndex -= 1;
   renderStep();
 });
 get('parts').addEventListener('submit', event => {
   event.preventDefault();
   const step = steps[stepIndex];
+  if (awaitingNext) {
+    stepIndex += 1;
+    renderStep();
+    return;
+  }
   if (step.options) {
     const selected = get('fields').querySelector('input:checked');
     if (!selected) return;
     choices[step.key] = Number(selected.value);
     if (step.key === 'budget') budget = budgets[choices.budget].price;
-    stepIndex += 1;
-    renderStep();
+    const pick = step.options[choices[step.key]];
+    const line = get('your-line');
+    line.textContent = step.key === 'budget' ? 'Ты: мой бюджет — ' + pick.name + '.' : 'Ты: давай возьмём этот вариант — ' + pick.name + '.';
+    line.hidden = false;
+    get('step-copy').textContent = reply(step.key, pick);
+    get('fields').hidden = true;
+    get('back').hidden = false;
+    get('cart').hidden = false;
+    get('advance').textContent = 'Дальше';
+    awaitingNext = true;
+    renderCart();
     return;
   }
   const [title,copy] = result(readBuild());

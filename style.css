@@ -61,3 +61,8 @@ select { width: 100%; min-width: 0; padding: 10px; background: #0e1924; color: i
 .secondary { background: #293e4d; color: #eef8ff; }
 button:disabled { opacity: .55; cursor: default; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.shop-dialog { margin: 10px 0 16px; padding: 15px; border-left: 3px solid var(--mint); background: #10202b; }
+.shop-dialog p:last-child { margin-bottom: 0; }
+#your-line { color: var(--mint); }
+.stage[data-scene="build"] { min-height: 170px; }
+.stage[data-scene="build"] #sprite { width: 108px; bottom: 0; left: 32%; }

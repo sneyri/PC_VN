@@ -12,8 +12,8 @@
 <header><a href="./">ПЕРВЫЙ ЗАПУСК</a><span id="chapter">Визуальная новелла</span></header>
 <section id="stage" class="stage" data-scene="title" aria-label="Мастерская">
 <div class="window" aria-hidden="true"></div><div class="desk" aria-hidden="true"><div class="terminal">C:\&gt;_</div></div>
-<canvas id="sprite" width="24" height="32" role="img" aria-label="Мира, мастер по сборке компьютеров" hidden></canvas>
-<div id="cover" class="cover"><p class="eyebrow">СУББОТА / 18:45</p><h1>Первый<br>запуск<span>_</span></h1><p>До закрытия мастерской один час. У тебя один заказ: собрать ПК, который справится с монтажом и играми.</p><button id="start" type="button">Начать историю</button></div>
+<canvas id="sprite" width="24" height="32" role="img" aria-label="Мира, консультант компьютерного магазина" hidden></canvas>
+<div id="cover" class="cover"><p class="eyebrow">СУББОТА / 18:45</p><h1>Первый<br>запуск<span>_</span></h1><p>Ты заходишь в компьютерный магазин за своим первым ПК для игр и монтажа. Мира поможет выбрать детали, а решать будешь ты.</p><button id="start" type="button">Начать историю</button></div>
 <div id="dialog" class="dialog" hidden><p class="eyebrow" id="speaker"></p><p id="line" role="status"></p><button id="next" type="button">Дальше</button></div>
 </section>
 <section id="builder" hidden aria-labelledby="build-title">
@@ -21,10 +21,10 @@
     <div><p class="eyebrow" id="step-number"></p><h2 id="build-title" tabindex="-1"></h2></div>
     <output id="total" aria-live="polite"></output>
   </div>
-  <p id="step-copy"></p>
+  <div class="shop-dialog"><p class="eyebrow" id="shop-speaker">МИРА · КОНСУЛЬТАНТ</p><p id="step-copy" aria-live="polite"></p><p id="your-line" hidden></p></div>
   <form id="parts">
     <fieldset id="fields"><legend class="sr-only" id="choice-label">Варианты</legend></fieldset>
-    <div class="actions"><button id="back" type="button" class="secondary">Назад</button><button id="advance" type="submit">Продолжить</button></div>
+    <div class="actions"><button id="back" type="button" class="secondary">Назад</button><button id="advance" type="submit">Ответить</button></div>
   </form>
   <details id="cart" hidden><summary>Корзина</summary><ul id="cart-list"></ul></details>
 </section>
