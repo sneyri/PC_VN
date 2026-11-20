@@ -13,7 +13,6 @@ header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8p
 header a, .eyebrow { color: var(--mint); text-decoration: none; font: 700 .82rem/1.4 monospace; letter-spacing: .12em; }
 header span { color: var(--muted); }
 .stage { position: relative; isolation: isolate; overflow: hidden; min-height: 560px; display: grid; align-items: end; border: 1px solid #43606e; border-radius: 16px; background: linear-gradient(0deg,#101a26a8,transparent 63%), var(--location) var(--view, 58% center)/cover no-repeat #263d4d; }
-#sprite { position: absolute; width: clamp(170px, 30vw, 292px); height: auto; left: 50%; bottom: 15%; transform: translateX(-50%); image-rendering: pixelated; }
 .cover { position: relative; padding: clamp(25px,7vw,70px); background: linear-gradient(90deg,#101b29ed,transparent); }
 h1, h2, p { margin: 0 0 12px; }
 h1 { font: 850 clamp(3rem,10vw,7rem)/.9 system-ui; letter-spacing: -.08em; }
@@ -59,18 +58,16 @@ button:disabled { opacity: .55; cursor: default; }
 .shop-dialog p:last-child { margin-bottom: 0; }
 #your-line { color: var(--mint); }
 .stage[data-scene="build"] { min-height: clamp(225px, 31vw, 340px); }
-.stage[data-scene="build"] #sprite { width: clamp(130px, 20vw, 210px); bottom: 0; left: 40%; }
 #fields { grid-template-columns: repeat(3,minmax(0,1fr)); }
 .choice-card { min-width: 0; background: #10202b; border: 1px solid #426071; border-radius: 12px; overflow: hidden; }
 #fields .choice-card label { height: auto; border: 0; border-radius: 0; background: transparent; }
 .choice-card:has(:checked) { border-color: var(--mint); box-shadow: inset 0 0 0 1px var(--mint); }
 .choice-card strong { overflow-wrap: anywhere; }
 .choice-card a { display: inline-block; margin: 0 13px 13px; color: #abdcff; text-underline-offset: 4px; }
-.part-art { display: block; width: 100%; height: 105px; object-fit: contain; background: #101e2a; image-rendering: pixelated; }
 #fields .recommend { color: var(--mint); margin-top: 4px; }
 .disclaimer { color: var(--muted); font-size: .9rem; }
 #your-line { margin-bottom: 10px; }
-@media(max-width: 700px) { #fields { grid-template-columns: 1fr; } .part-art { height: 75px; } }
+@media(max-width: 700px) { #fields { grid-template-columns: 1fr; } }
 .stage { --location: url(assets/storefront.webp); }
 .stage[data-location="shop"] { --location: url(assets/shop.webp); --view: 57% center; }
 .stage[data-location="bench"] { --location: url(assets/bench.webp); --view: 74% center; min-height: clamp(210px, 32vw, 350px); }
@@ -78,4 +75,56 @@ button:disabled { opacity: .55; cursor: default; }
 @media(max-width: 580px) {
   .stage { --view: 66% center; }
   .cover { background: linear-gradient(0deg,#0d1625f7,#0d1625ab 70%,transparent); }
+}
+body { background: radial-gradient(ellipse at top, #21313a, #0b1017 62rem); }
+.stage { box-shadow: 0 18px 44px #0006; }
+.stage[data-scene="dialog"] {
+  --view: 65% center;
+  min-height: clamp(480px, 63vw, 590px);
+}
+.stage[data-scene="build"] { --view: 60% center; }
+.stage[data-location="bench"] { --view: 84% center; }
+#sprite {
+  position: absolute;
+  z-index: -1;
+  right: clamp(25px, 11vw, 140px);
+  bottom: 0;
+  height: 91%;
+  max-width: 69%;
+  object-fit: contain;
+  object-position: bottom right;
+  filter: drop-shadow(0 12px 18px #060c15a8);
+}
+#sprite[data-character="artyom"] { right: 16%; }
+.stage[data-scene="build"] #sprite { right: 17%; height: 98%; }
+.dialog {
+  width: min(610px, calc(100% - 42px));
+  margin: 18px 21px;
+  background: linear-gradient(120deg,#15232ff7,#14232eec);
+  border-color: #91b1b98a;
+  box-shadow: 0 10px 24px #0006;
+}
+.dialog #speaker { color: #b4fbde; }
+.dialog-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#line-count { color: var(--muted); font: 700 .84rem monospace; }
+.consultant { display: grid; grid-template-columns: 54px minmax(0,1fr); align-items: start; gap: 13px; }
+.consultant img {
+  object-fit: cover;
+  object-position: center 12%;
+  border-radius: 9px;
+  background: linear-gradient(160deg,#427c79,#20353c);
+}
+.consultant p { margin-bottom: 6px; }
+.part-art {
+  display: block;
+  width: 100%;
+  height: clamp(106px, 14vw, 155px);
+  object-fit: contain;
+  background: #0d1b25;
+}
+@media(max-width: 580px) {
+  .stage[data-scene="dialog"] { --view: 70% center; }
+  #sprite, #sprite[data-character="artyom"] { right: 12%; height: 78%; max-width: 76%; }
+  .dialog { width: auto; margin: 10px; }
+  .stage[data-scene="build"] #sprite { right: 12%; }
 }

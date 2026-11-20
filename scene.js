@@ -66,24 +66,18 @@ let selected = null;
 let tier = null;
 let basket = {};
 
-function drawSprite(speaker) {
-  const canvas = get('sprite');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,24,32);
-  canvas.setAttribute('aria-label', speaker);
-  const friend = speaker === 'Артём';
-  const hair = friend ? '#372820' : '#65334e';
-  const coat = friend ? '#b26c52' : '#3e827d';
-  const pixels = [
-    [hair,6,3,13,12], ['#f1b591',8,6,9,10], [hair,7,5,8,3], [hair,7,7,2,4],
-    ['#252537',10,10,1,2], ['#252537',15,10,1,2], ['#a75553',12,13,2,1],
-    ['#d5916c',10,15,5,4], ['#283344',5,18,15,14], [coat,4,20,17,12],
-    ['#d7edc5',10,20,5,12], ['#f3c476',17,22,2,2], ['#263747',11,20,3,12]
-  ];
-  for (const [color,x,y,w,h] of pixels) {
-    ctx.fillStyle = color;
-    ctx.fillRect(x,y,w,h);
+const portraits = {'Мира':'mira', 'Артём':'artyom'};
+function setPortrait(speaker) {
+  const image = get('sprite');
+  const portrait = portraits[speaker];
+  if (!portrait) {
+    image.hidden = true;
+    return;
   }
+  image.hidden = false;
+  image.dataset.character = portrait;
+  image.src = 'assets/' + portrait + '.webp';
+  image.alt = speaker;
 }
 function show(scene) {
   const stage = get('stage');
@@ -101,8 +95,9 @@ function showLine() {
   get('chapter').textContent = inside ? 'Торговый зал' : 'У входа в магазин';
   get('speaker').textContent = speaker;
   get('line').textContent = line;
-  get('sprite').hidden = speaker !== 'Мира' && speaker !== 'Артём';
-  if (!get('sprite').hidden) drawSprite(speaker);
+  setPortrait(speaker);
+  get('line-count').textContent = (lineIndex + 1) + ' / ' + lines.length;
+
   get('next').textContent = lineIndex === lines.length - 1 ? 'Обсудить бюджет' : 'Дальше';
 }
 function total() {
@@ -124,39 +119,20 @@ function updateCart() {
   get('cart-label').textContent = 'Корзина · ' + rows.length + ' из ' + catalog.length;
 }
 
-const artwork = {
-  case: [[31,10,33,51],[37,15,21,30],[47,49,6,6]],
-  cpu: [[30,15,36,39],[38,23,20,23],[25,25,5,2],[66,25,5,2],[25,39,5,2],[66,39,5,2]],
-  cooler: [[31,13,34,36],[36,19,24,24],[39,49,4,9],[54,49,4,9]],
-  board: [[25,9,46,53],[29,13,18,18],[51,14,5,30],[60,14,5,30],[30,46,34,5],[30,54,24,4]],
-  ram: [[16,26,64,18],[23,30,9,8],[37,30,9,8],[51,30,9,8],[65,30,9,8],[20,44,55,3]],
-  gpu: [[13,23,69,30],[17,27,18,18],[37,27,18,18],[57,27,18,18],[22,53,36,4]],
-  ssd: [[13,28,70,18],[24,31,15,11],[42,31,15,11],[61,31,13,11],[79,31,7,10]],
-  psu: [[23,18,55,35],[30,24,22,22],[60,27,12,4],[60,36,12,4]]
-};
-function makeArt(key, index) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 96;
-  canvas.height = 70;
-  canvas.className = 'part-art';
-  canvas.setAttribute('aria-hidden','true');
-  const ctx = canvas.getContext('2d');
-  const accent = ['#8fe6c5','#83bdf3','#fac780'][index];
-  ctx.fillStyle = '#101e2a';
-  ctx.fillRect(0,0,96,70);
-  ctx.strokeStyle = '#243746';
-  for (let x=8;x<96;x+=8) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,70); ctx.stroke(); }
-  for (let y=7;y<70;y+=8) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(96,y); ctx.stroke(); }
-  for (const [i,[x,y,w,h]] of artwork[key].entries()) {
-    ctx.fillStyle = i === 0 ? '#344b5e' : accent;
-    ctx.fillRect(x,y,w,h);
-  }
-  return canvas;
+function makeArt(key) {
+  const image = document.createElement('img');
+  image.src = 'assets/parts/' + key + '.webp';
+  image.className = 'part-art';
+  image.alt = '';
+  image.width = 320;
+  image.height = 320;
+  image.decoding = 'async';
+  return image;
 }
 function makeCard(item, index, key) {
   const card = document.createElement('article');
   card.className = 'choice-card';
-  if (key) card.append(makeArt(key,index));
+  if (key) card.append(makeArt(key));
   const label = document.createElement('label');
   const radio = document.createElement('input');
   radio.type = 'radio';
@@ -267,7 +243,7 @@ get('next').addEventListener('click', () => {
   if (lineIndex < lines.length) { showLine(); return; }
   step = 0;
   show('build');
-  drawSprite('Мира');
+  setPortrait('Мира');
   renderStep();
 });
 get('parts').addEventListener('change', event => {
@@ -310,7 +286,7 @@ get('parts').addEventListener('submit', event => {
 get('retry').addEventListener('click', () => {
   step = catalog.length + 1;
   show('build');
-  drawSprite('Мира');
+  setPortrait('Мира');
   renderStep();
 });
 get('restart').addEventListener('click', () => {

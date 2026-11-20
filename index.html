@@ -11,13 +11,13 @@
 <main>
 <header><a href="./">ПЕРВЫЙ ЗАПУСК</a><span id="chapter">Суббота, 12:10</span></header>
 <section id="stage" class="stage" data-scene="title" aria-label="Компьютерный магазин">
-  <canvas id="sprite" width="24" height="32" role="img" hidden></canvas>
+  <img id="sprite" alt="" decoding="async" hidden>
   <div id="cover" class="cover"><p class="eyebrow">КОМПЬЮТЕРНЫЙ МАГАЗИН</p><h1>Первый<br>запуск<span>_</span></h1><p>Сегодня ты покупаешь свой первый компьютер. Друг уже ждёт у входа, а в магазине есть человек, который поможет разобраться в деталях.</p><button id="start" type="button">Начать историю</button></div>
-  <div id="dialog" class="dialog" hidden><p class="eyebrow" id="speaker"></p><p id="line" aria-live="polite"></p><button id="next" type="button">Дальше</button></div>
+  <div id="dialog" class="dialog" hidden><p class="eyebrow" id="speaker"></p><p id="line" aria-live="polite"></p><div class="dialog-actions"><span id="line-count" aria-hidden="true"></span><button id="next" type="button">Дальше</button></div></div>
 </section>
 <section id="builder" hidden aria-labelledby="build-title">
   <div class="build-head"><div><p class="eyebrow" id="step-number"></p><h2 id="build-title" tabindex="-1"></h2></div><output id="total" aria-live="polite"></output></div>
-  <div class="shop-dialog"><p id="your-line" hidden></p><p class="eyebrow">МИРА · КОНСУЛЬТАНТ</p><p id="step-copy" aria-live="polite"></p></div>
+  <div class="shop-dialog"><p id="your-line" hidden></p><div class="consultant"><img src="assets/mira.webp" alt="" width="54" height="54"><div><p class="eyebrow">МИРА · КОНСУЛЬТАНТ</p><p id="step-copy" aria-live="polite"></p></div></div></div>
   <form id="parts">
     <div id="fields" role="group" aria-label="Варианты"></div>
     <div class="actions"><button id="back" type="button" class="secondary">Назад</button><button id="advance" type="submit">Ответить</button></div>
