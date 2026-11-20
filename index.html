@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Первый запуск — ПК-новелла</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="scene.js"></script>
+</head>
+<body>
+<main>
+<header><a href="./">ПЕРВЫЙ ЗАПУСК</a><span id="chapter">Визуальная новелла</span></header>
+<section id="stage" class="stage" data-scene="title" aria-label="Мастерская">
+<div class="window" aria-hidden="true"></div><div class="desk" aria-hidden="true"><div class="terminal">C:\&gt;_</div></div>
+<canvas id="sprite" width="24" height="32" role="img" aria-label="Мира, мастер по сборке компьютеров" hidden></canvas>
+<div id="cover" class="cover"><p class="eyebrow">СУББОТА / 18:45</p><h1>Первый<br>запуск<span>_</span></h1><p>До закрытия мастерской один час. У тебя один заказ: собрать ПК, который справится с монтажом и играми.</p><button id="start" type="button">Начать историю</button></div>
+<div id="dialog" class="dialog" hidden><p class="eyebrow" id="speaker"></p><p id="line" role="status"></p><button id="next" type="button">Дальше</button></div>
+</section>
+<section id="builder" hidden aria-labelledby="build-title"><div class="build-head"><div><p class="eyebrow">ЗАКАЗ / 01</p><h2 id="build-title">Собери конфигурацию</h2></div><output id="total" aria-live="polite"></output></div><p>Бюджет — 80 000 ₽. Проверь сокет, запас мощности и объём памяти. Цены условные.</p><form id="parts"><div id="fields"></div><button type="submit">Проверить сборку</button></form></section>
+<section id="ending" hidden aria-labelledby="ending-title"><p class="eyebrow">КОНЦОВКА</p><h2 id="ending-title" tabindex="-1"></h2><p id="ending-copy"></p><div class="actions"><button id="retry" type="button">Пересобрать</button><button id="restart" type="button">Сначала</button></div></section>
+<noscript>Для игры нужен JavaScript.</noscript>
+</main>
+</body>
+</html>
