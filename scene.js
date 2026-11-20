@@ -86,7 +86,9 @@ function drawSprite(speaker) {
   }
 }
 function show(scene) {
-  get('stage').dataset.scene = scene;
+  const stage = get('stage');
+  stage.dataset.scene = scene;
+  stage.dataset.location = {title:'street', dialog:'street', build:'shop', end:'bench'}[scene];
   get('chapter').textContent = {title:'Суббота, 12:10', dialog:'У входа в магазин', build:'Торговый зал', end:'У кассы'}[scene];
   for (const [id,screen] of [['cover','title'],['dialog','dialog'],['sprite','dialog'],['builder','build'],['ending','end']]) {
     get(id).hidden = scene !== screen && !(id === 'sprite' && scene === 'build');
@@ -94,6 +96,9 @@ function show(scene) {
 }
 function showLine() {
   const [speaker, line] = lines[lineIndex];
+  const inside = speaker === 'Мира';
+  get('stage').dataset.location = inside ? 'shop' : 'street';
+  get('chapter').textContent = inside ? 'Торговый зал' : 'У входа в магазин';
   get('speaker').textContent = speaker;
   get('line').textContent = line;
   get('sprite').hidden = speaker !== 'Мира' && speaker !== 'Артём';
