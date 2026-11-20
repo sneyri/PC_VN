@@ -1,55 +1,84 @@
 const get = id => document.getElementById(id);
-let budget = 0;
-const money = new Intl.NumberFormat('ru-RU', {
-  style: 'currency', currency: 'RUB', maximumFractionDigits: 0
-});
-const parts = {
-  case: {name:'Корпус', options:[
-    {name:'Компактный · Micro-ATX', price:3500, size:'Micro-ATX', detail:'Подходит только для плат Micro-ATX.'},
-    {name:'Башня · ATX', price:5500, size:'ATX', detail:'Вмещает платы ATX и Micro-ATX.'}
+const rub = new Intl.NumberFormat('ru-RU', {style:'currency', currency:'RUB', maximumFractionDigits:0});
+const money = value => rub.format(value);
+const profiles = [
+  {name:'Уложиться в накопленное', limit:113000, label:'Доступный', goal:'Full HD и обычная работа', reply:'Хорошо, соберём игровой ПК под Full HD. Для монтажа в DaVinci Resolve можно начать с проектов в 1080p. На украшениях корпуса сэкономим.'},
+  {name:'Добавить деньги с подработки', limit:200000, label:'Средний', goal:'1440p и монтаж', reply:'Тогда подберём сборку для 1440p и более тяжёлых проектов в DaVinci Resolve. Я бы вложилась в видеокарту и память, а корпус взяла попроще.'},
+  {name:'Взять с большим запасом', limit:459000, label:'Дорогой', goal:'4K, монтаж и 3D', reply:'Можем смотреть в сторону игр в 4K и тяжёлых проектов в Blender. Проверим габариты и охлаждение: дорогие детали тоже должны поместиться и нормально работать.'}
+];
+const catalog = [
+  {key:'case', title:'Корпус', caption:'Начнём с корпуса. Он задаёт размер платы, длину видеокарты и то, какое охлаждение влезет.', items:[
+    {name:'DeepCool CH370', price:5500, note:'Компактный Micro-ATX', compact:true, radiator:240, gpuSpace:320},
+    {name:'Montech AIR 903 MAX', price:8500, note:'Продуваемая башня ATX', radiator:360, gpuSpace:400},
+    {name:'Lian Li LANCOOL III', price:21000, note:'Просторный корпус ATX', radiator:360, gpuSpace:435}
   ]},
-
-  cpu: {name:'Процессор', options:[
-    {name:'4 ядра · AM4', price:8000, socket:'AM4', watts:65, cores:4},
-    {name:'6 ядер · AM4', price:11500, socket:'AM4', watts:65, cores:6},
-    {name:'8 ядер · AM5', price:23500, socket:'AM5', watts:105, cores:8}
+  {key:'cpu', title:'Процессор', caption:'Теперь выберем процессор. Для игр хватит шести ядер, а монтаж, рендер и компиляция могут выиграть от большего числа ядер.', items:[
+    {name:'AMD Ryzen 5 7500F', price:15500, note:'6 ядер · AM5', heat:1, watts:88},
+    {name:'AMD Ryzen 7 9700X', price:29500, note:'8 ядер · AM5', heat:1, watts:88},
+    {name:'AMD Ryzen 9 9950X', price:68000, note:'16 ядер · AM5', heat:2, watts:230}
   ]},
-  board: {name:'Материнская плата', options:[
-    {name:'Плата AM4 · DDR4 · Micro-ATX', price:8000, socket:'AM4', size:'Micro-ATX'},
-    {name:'Плата AM5 · DDR5 · ATX', price:14000, socket:'AM5', size:'ATX'}
+  {key:'cooler', title:'Охлаждение', caption:'Процессору нужен кулер. Можно взять воздушный или жидкостный. Для жидкостного проверь, влезет ли радиатор.', items:[
+    {name:'DeepCool AG400', price:2600, note:'Башенный кулер · AM5', capacity:1, radiator:0},
+    {name:'DeepCool AK620', price:6400, note:'Двухбашенный кулер · AM5', capacity:1, radiator:0},
+    {name:'DeepCool LS720 SE', price:13500, note:'Жидкостное охлаждение · 360 мм', capacity:2, radiator:360}
   ]},
-  gpu: {name:'Видеокарта', options:[
-    {name:'6 ГБ · 120 Вт', price:18000, watts:120, vram:6},
-    {name:'8 ГБ · 160 Вт', price:28500, watts:160, vram:8},
-    {name:'12 ГБ · 280 Вт', price:45000, watts:280, vram:12}
+  {key:'board', title:'Материнская плата', caption:'Все три процессора на AM5. Здесь смотри на форм-фактор платы, разъёмы и возможности расширения.', items:[
+    {name:'MSI PRO B650M-A WIFI', price:15500, note:'AM5 · DDR5 · Micro-ATX', compact:true},
+    {name:'MSI MAG B650 TOMAHAWK WIFI', price:23500, note:'AM5 · DDR5 · ATX'},
+    {name:'ASUS ROG STRIX X870E-E GAMING WIFI', price:57500, note:'AM5 · DDR5 · ATX'}
   ]},
-  ram: {name:'Оперативная память', options:[
-    {name:'16 ГБ · DDR4', price:4000, socket:'AM4', gb:16},
-    {name:'32 ГБ · DDR4', price:6500, socket:'AM4', gb:32},
-    {name:'32 ГБ · DDR5', price:10000, socket:'AM5', gb:32}
+  {key:'ram', title:'Оперативная память', caption:'Наши платы работают с DDR5. Для игр и обычного монтажа выбирай 32 ГБ или больше, если работаешь с тяжёлыми проектами.', items:[
+    {name:'Kingston Fury Beast DDR5 16 ГБ', price:5500, note:'2 × 8 ГБ · DDR5', gb:16},
+    {name:'Kingston Fury Beast DDR5 32 ГБ', price:10000, note:'2 × 16 ГБ · DDR5', gb:32},
+    {name:'Kingston Fury Beast DDR5 64 ГБ', price:21000, note:'2 × 32 ГБ · DDR5', gb:64}
   ]},
-  power: {name:'Блок питания', options:[
-    {name:'400 Вт', price:3500, watts:400},
-    {name:'550 Вт', price:5500, watts:550},
-    {name:'650 Вт', price:7300, watts:650}
+  {key:'gpu', title:'Видеокарта', caption:'Видеокарта сильнее всего влияет на игры. Выбирай под разрешение монитора и задачи, ради которых покупаешь компьютер.', items:[
+    {name:'Palit GeForce RTX 5060 Dual', price:34000, note:'8 ГБ · ориентир на Full HD', watts:145, length:262},
+    {name:'Palit GeForce RTX 5070 GamingPro', price:72000, note:'12 ГБ · ориентир на 1440p', watts:250, length:332, minPsu:650},
+    {name:'Palit GeForce RTX 5090 GameRock', price:218000, note:'32 ГБ · ориентир на 4K и 3D', watts:575, length:332, minPsu:1000}
+  ]},
+  {key:'ssd', title:'Накопитель', caption:'Игры и исходники займут немало места. Сколько пространства тебе нужно на старте?', items:[
+    {name:'WD Blue SN580 1 ТБ', price:6500, note:'NVMe · 1 ТБ'},
+    {name:'Kingston KC3000 2 ТБ', price:12500, note:'NVMe · 2 ТБ'},
+    {name:'Samsung 990 PRO 4 ТБ', price:33000, note:'NVMe · 4 ТБ'}
+  ]},
+  {key:'psu', title:'Блок питания', caption:'Последняя деталь — питание. Оставим запас по мощности и проверим, подходит ли блок к видеокарте.', items:[
+    {name:'DeepCool PK650D', price:6500, note:'650 Вт', watts:650},
+    {name:'MSI MAG A850GL PCIE5', price:12500, note:'850 Вт · питание для современных видеокарт', watts:850},
+    {name:'be quiet! Pure Power 12 M 1000W', price:21500, note:'1000 Вт · ATX 3.0', watts:1000}
   ]}
-};
+];
 const lines = [
-  ['Мира', 'Привет! Ищешь готовый компьютер или хочешь собрать свой?'],
-  ['Ты', 'Хочу собрать свой. Буду играть и иногда монтировать видео, но в деталях пока не разбираюсь.'],
-  ['Мира', 'Давай подберём вместе. Для твоих задач я бы ориентировалась на шесть ядер, 32 ГБ памяти и видеокарту с 8 ГБ. Начнём с суммы, которую тебе удобно потратить.']
+  ['Рассказчик','Суббота, полдень. У входа в компьютерный магазин пахнет кофе из киоска по соседству. За стеклом светятся системники, а у двери уже ждёт твой друг Артём.'],
+  ['Артём','Ты же хотел наконец перестать монтировать на ноутбуке, который шумит даже при запуске браузера? Пошли. Только сначала назови сумму, за которую завтра не будет стыдно.'],
+  ['Ты','Хочу свой ПК. Чтобы и поиграть, и видео смонтировать. Но когда вижу весь этот ряд коробок, я уже не понимаю, с чего начать.'],
+  ['Мира','Привет! Я Мира, консультант. Давайте начнём с того, сколько ты готов потратить. Потом я покажу, какие детали можно взять и что такая сборка потянет.']
+];
+const workload = [
+  'Valorant и Fortnite в Full HD. Для работы — VS Code и монтаж 1080p в DaVinci Resolve.',
+  'Forza Horizon 5 и Cyberpunk 2077 в 1440p с подбором настроек. Для работы — DaVinci Resolve и проекты в Blender средней сложности.',
+  'Cyberpunk 2077 и другие тяжёлые игры в 4K с подбором настроек. Для работы — Blender, DaVinci Resolve и проекты с тяжёлыми сценами.'
 ];
 let lineIndex = 0;
+let step = 0;
+let phase = 'choose';
+let selected = null;
+let tier = null;
+let basket = {};
 
-function drawSprite() {
-  const ctx = get('sprite').getContext('2d');
+function drawSprite(speaker) {
+  const canvas = get('sprite');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,24,32);
+  canvas.setAttribute('aria-label', speaker);
+  const friend = speaker === 'Артём';
+  const hair = friend ? '#372820' : '#65334e';
+  const coat = friend ? '#b26c52' : '#3e827d';
   const pixels = [
-    ['#111a25',6,2,12,16], ['#4d3046',7,2,10,3], ['#4d3046',6,5,12,4],
-    ['#d5916c',8,7,9,9], ['#f1b591',9,8,7,7], ['#4d3046',7,5,4,6],
+    [hair,6,3,13,12], ['#f1b591',8,6,9,10], [hair,7,5,8,3], [hair,7,7,2,4],
     ['#252537',10,10,1,2], ['#252537',15,10,1,2], ['#a75553',12,13,2,1],
-    ['#d5916c',10,15,5,4], ['#283344',5,18,15,14], ['#3e827d',4,20,17,12],
-    ['#a3e4bb',10,19,5,13], ['#296162',5,24,5,8], ['#296162',16,24,4,8],
-    ['#f3c476',17,22,2,2], ['#263747',11,20,3,12]
+    ['#d5916c',10,15,5,4], ['#283344',5,18,15,14], [coat,4,20,17,12],
+    ['#d7edc5',10,20,5,12], ['#f3c476',17,22,2,2], ['#263747',11,20,3,12]
   ];
   for (const [color,x,y,w,h] of pixels) {
     ctx.fillStyle = color;
@@ -58,7 +87,7 @@ function drawSprite() {
 }
 function show(scene) {
   get('stage').dataset.scene = scene;
-  get('chapter').textContent = {title:'Визуальная новелла', dialog:'Мастерская', build:'Подбор деталей', end:'Первый запуск'}[scene];
+  get('chapter').textContent = {title:'Суббота, 12:10', dialog:'У входа в магазин', build:'Торговый зал', end:'У кассы'}[scene];
   for (const [id,screen] of [['cover','title'],['dialog','dialog'],['sprite','dialog'],['builder','build'],['ending','end']]) {
     get(id).hidden = scene !== screen && !(id === 'sprite' && scene === 'build');
   }
@@ -67,181 +96,221 @@ function showLine() {
   const [speaker, line] = lines[lineIndex];
   get('speaker').textContent = speaker;
   get('line').textContent = line;
-  get('next').textContent = lineIndex === lines.length - 1 ? 'К сборке' : 'Дальше';
+  get('sprite').hidden = speaker !== 'Мира' && speaker !== 'Артём';
+  if (!get('sprite').hidden) drawSprite(speaker);
+  get('next').textContent = lineIndex === lines.length - 1 ? 'Обсудить бюджет' : 'Дальше';
 }
-const fixedPrice = 5000;
-const budgets = [
-  {name:'65 000 ₽', price:65000, detail:'Бюджет впритык, придётся внимательно выбирать детали.'},
-  {name:'80 000 ₽', price:80000, detail:'Есть запас на память и видеокарту.'},
-  {name:'100 000 ₽', price:100000, detail:'Больше свободы при выборе комплектующих.'}
-];
-const questions = {
-  case:'Где будет стоять твой компьютер? Для маленького стола есть компактный корпус. Если места хватает, башня даст больше свободы с выбором платы.',
-  cpu:'Что возьмём для твоих игр и монтажа? Шесть ядер — разумная середина. Восемь быстрее в тяжёлых задачах, но потянут за собой более дорогую плату.',
-  board:'Теперь подберём плату. Посмотри на сокет выбранного процессора и проверь, влезет ли плата в твой корпус.',
-  gpu:'Что важнее для тебя — сэкономить или взять карту с запасом? Для твоих игр и монтажа я бы начала с 8 ГБ видеопамяти.',
-  ram:'Для монтажа я бы взяла 32 ГБ. Какой комплект выбираешь? Тип DDR должен совпадать с тем, что поддерживает твоя плата.',
-  power:'Остался блок питания. Какой берём? Я посчитаю, хватит ли мощности с запасом.'
-};
-const steps = [
-  {key:'budget', name:'Бюджет', options:budgets, hint:'Какой у тебя бюджет на весь компьютер? SSD за 5 000 ₽ я уже включила в смету.'},
-  ...Object.entries(parts).map(([key, part]) => ({key, ...part, hint:questions[key]})),
-  {key:'review', name:'У кассы', hint:'Вот твоя сборка. Хочешь что-то заменить или сделаем пробный запуск перед покупкой?'}
-];
-const choices = {};
-let stepIndex = 0;
-let awaitingNext = false;
-
-function price(build) {
-  return fixedPrice + Object.values(build).reduce((sum, part) => sum + part.price, 0);
+function total() {
+  return Object.values(basket).reduce((sum, part) => sum + part.price, 0);
 }
-function readBuild() {
-  return Object.fromEntries(Object.entries(parts).flatMap(([key, part]) =>
-    choices[key] === undefined ? [] : [[key, part.options[choices[key]]]]
-  ));
-}
-function renderCart() {
-  const build = readBuild();
-  const items = [['SSD', fixedPrice], ...Object.values(build).map(part => [part.name, part.price])];
-  const rows = items.map(([name, cost]) => {
+function updateCart() {
+  const cost = total();
+  const profile = profiles[tier];
+  get('total').textContent = profile ? money(cost) + ' / ' + money(profile.limit) : '';
+  get('total').classList.toggle('over', Boolean(profile && cost > profile.limit));
+  const rows = catalog.flatMap(({key,title}) => {
+    const item = basket[key];
+    if (!item) return [];
     const row = document.createElement('li');
-    row.textContent = name + ' — ' + money.format(cost);
-    return row;
+    row.textContent = title + ': ' + item.name + ' — ' + money(item.price);
+    return [row];
   });
-  const cost = price(build);
   get('cart-list').replaceChildren(...rows);
-  get('total').textContent = budget ? money.format(cost) + ' / ' + money.format(budget) : '';
-  get('total').classList.toggle('over', budget > 0 && cost > budget);
+  get('cart-label').textContent = 'Корзина · ' + rows.length + ' из ' + catalog.length;
 }
-function reply(key, pick) {
-  const build = readBuild();
-  switch (key) {
-    case 'budget': return 'Договорились, держимся в пределах ' + money.format(budget) + '. Теперь посмотрим корпуса.';
-    case 'case': return pick.size === 'ATX' ? 'В эту башню влезут обе наши платы.' : 'Компактный вариант. Тогда нам понадобится плата Micro-ATX.';
-    case 'cpu': return 'Записала процессор на ' + pick.socket + '. Под него ищем плату с тем же сокетом.';
-    case 'board':
-      if (pick.socket !== build.cpu.socket) return 'У этой платы другой сокет. Можно положить её в корзину, но перед покупкой придётся заменить плату или процессор.';
-      if (pick.size === 'ATX' && build.case.size !== 'ATX') return 'По сокету подходит, но плата не влезет в твой корпус. Потом можно вернуться и поменять один из вариантов.';
-      return 'Отлично, плата подходит к процессору и помещается в корпус.';
-    case 'gpu': return pick.vram < 8 ? 'Сэкономим на видеокарте. Для лёгких игр хватит, но в тяжёлых проектах 6 ГБ могут стать ограничением.' : 'Для твоих задач видеопамяти достаточно. Учтём её потребление, когда дойдём до блока питания.';
-    case 'ram': return pick.socket !== build.board.socket ? 'Этот тип памяти не подходит к выбранной плате. Вернёмся к нему перед покупкой.' : pick.gb < 32 ? '16 ГБ хватит для обычной работы, но на монтаже запас будет меньше.' : '32 ГБ, и тип памяти подходит. Для монтажа хороший выбор.';
-    case 'power': {
-      const needed = Math.ceil((build.cpu.watts + build.gpu.watts + 80) * 1.25);
-      return pick.watts >= needed ? 'По моей прикидке нужно от ' + needed + ' Вт. У выбранного блока есть запас.' : 'С запасом я бы взяла от ' + needed + ' Вт. Этот блок слабоват, можешь вернуться и выбрать другой.';
-    }
+
+const artwork = {
+  case: [[31,10,33,51],[37,15,21,30],[47,49,6,6]],
+  cpu: [[30,15,36,39],[38,23,20,23],[25,25,5,2],[66,25,5,2],[25,39,5,2],[66,39,5,2]],
+  cooler: [[31,13,34,36],[36,19,24,24],[39,49,4,9],[54,49,4,9]],
+  board: [[25,9,46,53],[29,13,18,18],[51,14,5,30],[60,14,5,30],[30,46,34,5],[30,54,24,4]],
+  ram: [[16,26,64,18],[23,30,9,8],[37,30,9,8],[51,30,9,8],[65,30,9,8],[20,44,55,3]],
+  gpu: [[13,23,69,30],[17,27,18,18],[37,27,18,18],[57,27,18,18],[22,53,36,4]],
+  ssd: [[13,28,70,18],[24,31,15,11],[42,31,15,11],[61,31,13,11],[79,31,7,10]],
+  psu: [[23,18,55,35],[30,24,22,22],[60,27,12,4],[60,36,12,4]]
+};
+function makeArt(key, index) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 96;
+  canvas.height = 70;
+  canvas.className = 'part-art';
+  canvas.setAttribute('aria-hidden','true');
+  const ctx = canvas.getContext('2d');
+  const accent = ['#8fe6c5','#83bdf3','#fac780'][index];
+  ctx.fillStyle = '#101e2a';
+  ctx.fillRect(0,0,96,70);
+  ctx.strokeStyle = '#243746';
+  for (let x=8;x<96;x+=8) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,70); ctx.stroke(); }
+  for (let y=7;y<70;y+=8) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(96,y); ctx.stroke(); }
+  for (const [i,[x,y,w,h]] of artwork[key].entries()) {
+    ctx.fillStyle = i === 0 ? '#344b5e' : accent;
+    ctx.fillRect(x,y,w,h);
   }
+  return canvas;
+}
+function makeCard(item, index, key) {
+  const card = document.createElement('article');
+  card.className = 'choice-card';
+  if (key) card.append(makeArt(key,index));
+  const label = document.createElement('label');
+  const radio = document.createElement('input');
+  radio.type = 'radio';
+  radio.name = 'choice';
+  radio.value = index;
+  radio.checked = selected === index;
+  const name = document.createElement('strong');
+  name.textContent = item.name;
+  const detail = document.createElement('small');
+  detail.textContent = key ? item.note + ' · ' + money(item.price) : item.label + ' · ' + money(item.limit) + ' · ' + item.goal;
+  const body = document.createElement('span');
+  body.append(name,detail);
+  if (key && index === tier) {
+    const badge = document.createElement('small');
+    badge.className = 'recommend';
+    badge.textContent = 'Под твой бюджет';
+    body.append(badge);
+  }
+  label.append(radio,body);
+  card.append(label);
+  if (key) {
+    const link = document.createElement('a');
+    link.href = 'https://www.dns-shop.ru/search/?q=' + encodeURIComponent(item.name);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Открыть в DNS';
+    card.append(link);
+  }
+  return card;
 }
 function renderStep() {
-  const step = steps[stepIndex];
-  const fields = get('fields');
-  const review = !step.options;
-  awaitingNext = false;
+  const current = catalog[step - 1];
+  const review = step > catalog.length;
+  phase = 'choose';
+  selected = step === 0 ? tier : current ? current.items.indexOf(basket[current.key]) : null;
+  if (selected === -1) selected = null;
+  get('step-number').textContent = step === 0 ? 'РАЗГОВОР О БЮДЖЕТЕ' : review ? 'ПРОВЕРКА КОРЗИНЫ' : 'ДЕТАЛЬ ' + step + ' ИЗ ' + catalog.length;
+  get('build-title').textContent = step === 0 ? 'На какую сумму рассчитываешь?' : review ? 'Готов к пробному запуску?' : current.title;
+  get('step-copy').textContent = step === 0 ? 'Расскажи, как планируешь потратить деньги. От этого зависит, что я предложу в первую очередь.' :
+    review ? 'В корзине все детали. Можем вернуться и что-то заменить или проверить, что получится.' : current.caption;
   get('your-line').hidden = true;
-  get('step-number').textContent = 'ШАГ ' + (stepIndex + 1) + ' / ' + steps.length;
-  get('build-title').textContent = step.name;
-  get('step-copy').textContent = step.hint;
-  fields.querySelectorAll('label').forEach(label => label.remove());
-  fields.hidden = review;
-  get('back').hidden = stepIndex === 0;
-  get('advance').disabled = !review && choices[step.key] === undefined;
-  get('advance').textContent = review ? 'Сделать пробный запуск' : 'Ответить';
-  get('cart').hidden = step.key === 'budget';
-  if (review) get('cart').open = true;
-
-  for (const [index, option] of (step.options ?? []).entries()) {
-    const label = document.createElement('label');
-    const input = document.createElement('input');
-    input.type = 'radio';
-    input.name = 'choice';
-    input.value = index;
-    input.checked = choices[step.key] === index;
-    const text = document.createElement('span');
-    text.textContent = step.key === 'budget' ? option.name : option.name + ' — ' + money.format(option.price);
-    if (option.detail) {
-      const description = document.createElement('small');
-      description.textContent = option.detail;
-      text.append(description);
-    }
-    label.append(input, text);
-    fields.append(label);
-  }
-  renderCart();
+  const items = review ? [] : current ? current.items : profiles;
+  get('fields').replaceChildren(...items.map((item,index) => makeCard(item,index,current?.key)));
+  get('fields').hidden = review;
+  get('back').hidden = step === 0;
+  get('advance').disabled = !review && selected === null;
+  get('advance').textContent = step === 0 ? 'Ответить' : review ? 'Сделать пробный запуск' : 'Добавить в корзину';
+  get('cart').hidden = tier === null;
+  get('cart').open = review;
+  updateCart();
   get('build-title').focus();
 }
-function result(build) {
-  const {cpu,board,gpu,ram,power} = build;
-  if (build.case.size === 'Micro-ATX' && board.size === 'ATX') return ['Плата не влезла', 'Для платы ATX нужен корпус ATX. Вернись к корпусу или выбери плату Micro-ATX.'];
-  const faults = [];
-  if (cpu.socket !== board.socket) faults.push('Процессор и плата используют разные сокеты.');
-  if (ram.socket !== board.socket) faults.push('Тип памяти не подходит к плате.');
-  if (power.watts < Math.ceil((cpu.watts + gpu.watts + 80) * 1.25)) faults.push('Блоку питания не хватает запаса мощности.');
-  if (faults.length) return ['Чёрный экран', faults.join(' ') + ' Мира предлагает заменить детали до запуска.'];
-  if (price(build) > budget) return ['Пауза у кассы', 'Компьютер собран, но смета вышла за бюджет на ' + money.format(price(build) - budget) + '. Ты можешь убрать дорогую деталь или вернуться к обсуждению бюджета.'];
-  if (cpu.cores < 6 || ram.gb < 32 || gpu.vram < 8) return ['Запустился, но с оговоркой', 'Компьютер работает, но для твоих игр и монтажа Мира советует хотя бы 6 ядер, 32 ГБ памяти и видеокарта с 8 ГБ.'];
-  return ['Первый запуск', 'Система стартовала. Сборка помещается в бюджет и подходит под задачи. Ты оплачиваешь свой первый ПК. Мира отдаёт тебе коробку и напоминает снять плёнку с корпуса дома.'];
+function componentReply(key, item) {
+  switch (key) {
+    case 'case': return item.compact ? 'Хороший вариант для небольшого стола. Дальше ищем плату Micro-ATX и поглядываем на длину видеокарты.' : 'В этой башне есть место для полноразмерной платы. Теперь решим, какой процессор поставим.';
+    case 'cpu': return item.heat === 2 ? 'Этот 16-ядерник пригодится для рендера. На охлаждении здесь лучше не экономить.' : 'Взяли процессор под AM5. Теперь выберем кулер и плату под него.';
+    case 'cooler':
+      if (item.radiator > basket.case.radiator) return 'Радиатор не помещается в выбранный корпус. Можешь вернуться к корпусу или заменить охлаждение.';
+      return item.capacity < basket.cpu.heat ? 'Для этого процессора я бы взяла охлаждение с большим запасом.' : 'По нашей смете это охлаждение подходит. Переходим к плате.';
+    case 'board': return basket.case.compact && !item.compact ? 'Плата ATX не влезет в компактный корпус. Вернись к корпусу или выбери плату Micro-ATX.' : 'Плата входит в корпус и работает с выбранным процессором. Ищем память DDR5.';
+    case 'ram': return item.gb < 32 ? 'Для игр можно начать с 16 ГБ. Если часто монтируешь видео, я бы всё же рассмотрела 32 ГБ.' : 'С памятью есть запас для монтажа и приложений, которые ты держишь открытыми одновременно.';
+    case 'gpu': return (item.length > basket.case.gpuSpace ? 'Проверь корпус: эта видеокарта длиннее нашего лимита. ' : '') + workload[catalog.find(entry => entry.key === 'gpu').items.indexOf(item)] + ' Это ориентир, настройки и скорость зависят от всей сборки.';
+    case 'ssd': return 'Накопитель в корзине. Осталось подобрать питание для всего компьютера.';
+    case 'psu': return item.watts >= requiredPower() ? 'По нашему расчёту запас мощности есть. Переходим к итоговой корзине.' : 'По нашему расчёту нужно от ' + requiredPower() + ' Вт. Лучше вернуться и выбрать блок с запасом.';
+  }
 }
-get('parts').addEventListener('change', () => {
-  get('advance').disabled = false;
-});
-get('back').addEventListener('click', () => {
-  if (!awaitingNext) stepIndex -= 1;
-  renderStep();
-});
-get('parts').addEventListener('submit', event => {
-  event.preventDefault();
-  const step = steps[stepIndex];
-  if (awaitingNext) {
-    stepIndex += 1;
-    renderStep();
-    return;
+function requiredPower() {
+  const estimate = Math.ceil((basket.cpu.watts + basket.gpu.watts + 70) * 1.1 / 10) * 10;
+  return Math.max(estimate, basket.gpu.minPsu ?? 0);
+}
+function finish() {
+  const faults = [];
+  if (basket.case.compact && !basket.board.compact) faults.push('Плата не входит в корпус.');
+  if (basket.gpu.length > basket.case.gpuSpace) faults.push('Видеокарта длиннее, чем позволяет корпус.');
+  if (basket.cooler.radiator > basket.case.radiator) faults.push('Радиатор не помещается в корпус.');
+  if (basket.cooler.capacity < basket.cpu.heat) faults.push('Для процессора нужно более мощное охлаждение.');
+  if (basket.psu.watts < requiredPower()) faults.push('Блоку питания не хватает запаса.');
+  const gpuTier = catalog.find(entry => entry.key === 'gpu').items.indexOf(basket.gpu);
+  const over = total() - profiles[tier].limit;
+  let title = 'Первый запуск';
+  let copy = 'Мира запускает тест, и монитор загорается. Ты оплачиваешь сборку. Артём уже спрашивает, во что вы сыграете вечером.';
+  if (faults.length) {
+    title = 'Мира остановила сборку';
+    copy = faults.join(' ') + ' Вы решаете поправить корзину до оплаты.';
+  } else if (over > 0) {
+    title = 'Пауза у кассы';
+    copy = 'Мира разворачивает монитор с чеком. Сборка стоит на ' + money(over) + ' больше, чем ты планировал. Можно обсудить бюджет снова или заменить детали.';
+  } else if (gpuTier < tier || basket.ram.gb < [16,32,64][tier]) {
+    title = 'Покупка с компромиссом';
+    copy = 'ПК проходит пробный запуск. Мира объясняет, где выбранная сборка уступает твоей цели. Ты можешь забрать её и позже обновить детали или пересмотреть корзину сейчас. ' + workload[gpuTier];
+  } else {
+    copy += ' ' + workload[gpuTier];
   }
-  if (step.options) {
-    const selected = get('fields').querySelector('input:checked');
-    if (!selected) return;
-    choices[step.key] = Number(selected.value);
-    if (step.key === 'budget') budget = budgets[choices.budget].price;
-    const pick = step.options[choices[step.key]];
-    const line = get('your-line');
-    line.textContent = step.key === 'budget' ? 'Ты: мой бюджет — ' + pick.name + '.' : 'Ты: давай возьмём этот вариант — ' + pick.name + '.';
-    line.hidden = false;
-    get('step-copy').textContent = reply(step.key, pick);
-    get('fields').hidden = true;
-    get('back').hidden = false;
-    get('cart').hidden = false;
-    get('advance').textContent = 'Дальше';
-    awaitingNext = true;
-    renderCart();
-    return;
-  }
-  const [title,copy] = result(readBuild());
   get('ending-title').textContent = title;
   get('ending-copy').textContent = copy;
   show('end');
   get('ending-title').focus();
-});
+}
+
 get('start').addEventListener('click', () => {
   lineIndex = 0;
   show('dialog');
   showLine();
   get('next').focus();
 });
-function openBuilder() {
-  show('build');
-  stepIndex = 0;
-  get('cart').open = false;
-  renderStep();
-
-}
 get('next').addEventListener('click', () => {
   lineIndex += 1;
-  if (lineIndex === lines.length) openBuilder();
-  else showLine();
+  if (lineIndex < lines.length) { showLine(); return; }
+  step = 0;
+  show('build');
+  drawSprite('Мира');
+  renderStep();
 });
-get('retry').addEventListener('click', openBuilder);
+get('parts').addEventListener('change', event => {
+  if (event.target.name !== 'choice') return;
+  selected = Number(event.target.value);
+  get('advance').disabled = false;
+});
+get('back').addEventListener('click', () => {
+  if (phase === 'choose' && step > 0) step -= 1;
+  renderStep();
+});
+get('parts').addEventListener('submit', event => {
+  event.preventDefault();
+  if (phase === 'reply') {
+    step += 1;
+    renderStep();
+    return;
+  }
+  if (step > catalog.length) { finish(); return; }
+  if (selected === null) return;
+  const current = catalog[step - 1];
+  if (current) {
+    const item = current.items[selected];
+    basket[current.key] = item;
+    get('your-line').textContent = 'Ты: беру ' + item.name + '.';
+    get('step-copy').textContent = componentReply(current.key,item);
+  } else {
+    tier = selected;
+    get('your-line').textContent = 'Ты: мой лимит — ' + money(profiles[tier].limit) + '. ' + ['Хочу уложиться в накопленное.','Могу добавить деньги с подработки.','Готов заплатить за запас на несколько лет.'][tier];
+    get('step-copy').textContent = profiles[tier].reply;
+  }
+  phase = 'reply';
+  get('your-line').hidden = false;
+  get('fields').hidden = true;
+  get('back').hidden = false;
+  get('cart').hidden = false;
+  get('advance').textContent = 'Готов к разговору';
+  updateCart();
+});
+get('retry').addEventListener('click', () => {
+  step = catalog.length + 1;
+  show('build');
+  drawSprite('Мира');
+  renderStep();
+});
 get('restart').addEventListener('click', () => {
-  for (const key of Object.keys(choices)) delete choices[key];
-  budget = 0;
+  tier = null;
+  basket = {};
   show('title');
   get('start').focus();
 });
-drawSprite();
